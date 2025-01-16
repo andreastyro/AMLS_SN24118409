@@ -66,3 +66,40 @@ class BreastMNISTCNN(nn.Module):
 # Initialize the model
 model = BreastMNISTCNN()
 print(model)
+
+# Define loss function and optimizer
+criterion = nn.BCEWithLogitsLoss()  # Combines sigmoid + binary cross-entropy
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+# Lists to store loss and accuracy
+train_losses = []
+val_losses = []
+train_accuracies = []
+val_accuracies = []
+
+# Training loop
+for epoch in range(NUM_EPOCHS):
+    model.train()
+    train_loss = 0
+    correct = 0
+    total = 0
+
+    for images, labels in train_loader:
+        labels = labels.float()  # Adjust labels shape for BCEWithLogitsLoss
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        # Track loss and accuracy
+        train_loss += loss.item()
+        predictions = (torch.sigmoid(outputs) >= 0.5).float()
+        correct += (predictions == labels).sum().item()
+        total += labels.size(0)
+
+    train_accuracy = correct / total
+    train_losses.append(train_loss / len(train_loader))
+    train_accuracies.append(train_accuracy)
+
+    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}], Loss: {train_loss/len(train_loader):.4f}, Accuracy: {train_accuracy:.4f}')\
