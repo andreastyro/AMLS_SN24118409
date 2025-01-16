@@ -102,4 +102,47 @@ for epoch in range(NUM_EPOCHS):
     train_losses.append(train_loss / len(train_loader))
     train_accuracies.append(train_accuracy)
 
-    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}], Loss: {train_loss/len(train_loader):.4f}, Accuracy: {train_accuracy:.4f}')\
+    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}], Loss: {train_loss/len(train_loader):.4f}, Accuracy: {train_accuracy:.4f}')
+
+    # Validation
+    model.eval()
+    val_loss = 0
+    val_correct = 0
+    total_val = 0
+
+    with torch.no_grad():
+        for images, labels in val_loader:
+            labels = labels.float()  # Adjust labels shape for BCEWithLogitsLoss
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            # Track validation loss and accuracy
+            val_loss += loss.item()
+            predictions = (torch.sigmoid(outputs) >= 0.5).float()
+            val_correct += (predictions == labels).sum().item()
+            total_val += labels.size(0)
+
+    val_accuracy = val_correct / total_val
+    val_losses.append(val_loss / len(val_loader))
+    val_accuracies.append(val_accuracy)
+    
+    print(f"Epoch [{epoch+1}/{NUM_EPOCHS}] - Val Loss: {val_loss/len(val_loader):.4f}, Val Accuracy: {val_accuracy:.4f}")
+
+# Test loop
+model.eval()
+test_loss = 0
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for images, labels in test_loader:
+        labels = labels.float()  # Adjust labels shape for BCEWithLogitsLoss
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        test_loss += loss.item()
+        predictions = (torch.sigmoid(outputs) >= 0.5).float()
+        correct += (predictions == labels).sum().item()
+        total += labels.size(0)
+
+test_accuracy = correct / total
+print(f'Test Loss: {test_loss/len(test_loader):.4f}, Accuracy: {test_accuracy:.4f}')
