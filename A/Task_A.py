@@ -146,3 +146,29 @@ with torch.no_grad():
 
 test_accuracy = correct / total
 print(f'Test Loss: {test_loss/len(test_loader):.4f}, Accuracy: {test_accuracy:.4f}')
+
+# Plotting Performance
+epochs = range(1, NUM_EPOCHS + 1)
+
+# Create subplots
+fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+
+# Plot Loss
+axes[0].plot(epochs, train_losses, label="Training Loss", marker='o')
+axes[0].plot(epochs, val_losses, label="Validation Loss", marker='o')
+axes[0].set_title("Loss vs Epochs")
+axes[0].set_xlabel("Epochs")
+axes[0].set_ylabel("Loss")
+axes[0].legend()
+
+# Plot Accuracy
+axes[1].plot(epochs, train_accuracies, label="Training Accuracy", marker='o')
+axes[1].plot(epochs, val_accuracies, label="Validation Accuracy", marker='o')
+axes[1].set_title("Accuracy vs Epochs")
+axes[1].set_xlabel("Epochs")
+axes[1].set_ylabel("Accuracy")
+axes[1].legend()
+
+# Adjust spacing between plots
+plt.tight_layout()
+plt.show()
