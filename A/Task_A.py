@@ -45,3 +45,24 @@ plt.axis("off")
 plt.title("Montage of Training Data")
 plt.show()
 
+# Define the CNN model
+class BreastMNISTCNN(nn.Module):
+    def __init__(self):
+        super(BreastMNISTCNN, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # Output: 32x28x28
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)  # Output: 64x28x28
+        self.pool = nn.MaxPool2d(2, 2)  # Halves dimensions: 64x14x14
+        self.fc1 = nn.Linear(64 * 14 * 14, 128)  # Fully connected layer
+        self.fc2 = nn.Linear(128, 1)  # Output layer (1 neuron for binary classification)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))  # Convolution + ReLU
+        x = self.pool(F.relu(self.conv2(x)))  # Convolution + ReLU + Pooling
+        x = x.view(-1, 64 * 14 * 14)  # Flatten
+        x = F.relu(self.fc1(x))  # Fully connected + ReLU\
+        x = self.fc2(x)  # Output logits
+        return x
+
+# Initialize the model
+model = BreastMNISTCNN()
+print(model)
