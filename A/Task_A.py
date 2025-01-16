@@ -35,3 +35,13 @@ train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
 
+#Visualize Images
+montage_image = train_data.montage(length=20)
+
+# Display the montage using matplotlib
+plt.figure(figsize=(10, 10))
+plt.imshow(montage_image)
+plt.axis("off")
+plt.title("Montage of Training Data")
+plt.show()
+
