@@ -12,7 +12,7 @@ def get_data_loaders(data_flag='breastmnist', batch_size=32, download=True):
     info = INFO[data_flag]
     DataClass = getattr(medmnist, info['python_class'])
 
-    transform = transforms.Compose([
+    transform = transforms.Compose([ #Data augmenetation
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomRotation(degrees=10),
         transforms.ToTensor()
@@ -32,33 +32,36 @@ def get_data_loaders(data_flag='breastmnist', batch_size=32, download=True):
 class BreastMNISTCNN(nn.Module):
     def __init__(self):
         super(BreastMNISTCNN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1) #64x28x28
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1) #128x28x28
         self.bn2 = nn.BatchNorm2d(128)
-        self.pool1 = nn.MaxPool2d(2, 2)  # 64x14x14
+        self.pool1 = nn.MaxPool2d(2, 2)  # 128x14x14
 
-        self.fc1 = nn.Linear(128 * 14 * 14, 256)
+        self.fc1 = nn.Linear(128 * 14 * 14, 256) #256x14x14
         self.dropout = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(256, 1)
+        self.fc2 = nn.Linear(256, 1) #Binary Classification
 
     def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn1(self.conv1(x))) #Convolution + Batch normalization + ReLU
         x = F.relu(self.bn2(self.conv2(x)))
-        x = self.pool1(x)
-        x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
+        x = self.pool1(x) # Pooling
+
+        x = x.view(x.size(0), -1) #Flatten
+
+        x = F.relu(self.fc1(x)) # Fully Connected + ReLU
         x = self.dropout(x)
-        x = self.fc2(x)
+        x = self.fc2(x) #output
         return x
 
-# Function to train the model
+# Function for training and validation of the model
 def train_model(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     train_losses = []
     val_losses = []
     train_accuracies = []
     val_accuracies = []
 
+    #Training loop
     for epoch in range(num_epochs):
         model.train()
         train_loss = 0
@@ -66,13 +69,14 @@ def train_model(model, train_loader, val_loader, num_epochs, criterion, optimize
         total = 0
 
         for images, labels in train_loader:
-            labels = labels.float()
+            labels = labels.float() #Adjust labels shape for BCEWithLogitsLoss
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 
+            # Loss and accuracy calculations
             train_loss += loss.item()
             predictions = (torch.sigmoid(outputs) >= 0.5).float()
             correct += (predictions == labels).sum().item()
@@ -90,7 +94,7 @@ def train_model(model, train_loader, val_loader, num_epochs, criterion, optimize
         val_correct = 0
         total_val = 0
 
-        with torch.no_grad():
+        with torch.no_grad(): #No weight adjustments for validation
             for images, labels in val_loader:
                 labels = labels.float()
                 outputs = model(images)
@@ -116,7 +120,7 @@ def test_model(model, test_loader, criterion):
     correct = 0
     total = 0
 
-    with torch.no_grad():
+    with torch.no_grad(): #No weight adjustments for testing
         for images, labels in test_loader:
             labels = labels.float()
             outputs = model(images)

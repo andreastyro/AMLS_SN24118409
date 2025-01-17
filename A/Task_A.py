@@ -31,6 +31,7 @@ transform = transforms.Compose([
 ])
 
 # Load data
+
 train_data = DataClass(split='train', transform=transform, download=download)
 test_data = DataClass(split='test', transform=transform, download=download)
 val_data = DataClass(split='val', transform=transform, download=download)
