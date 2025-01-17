@@ -1,7 +1,8 @@
 # AMLS_SN24118409
 AMLS Report
 
-The files are organized as such. Each letter folder contains two python files, the Task_X.py files, were they solve the task on their own and the Model_CNN.py files that have a refactored version of the code that can be imported to the main.py file. Moreover, the main.py file imports the BreastMNIST_CNN.py and BloodMNIST_CNN.py files to use. The datasets folder contains a .gitkeep file in order to be pushed to the repository as empty directories cannot exist in GitHub.
+
+The files are organized as such. Each letter folder contains two python files, the Task_X.py files, were they solve the task on their own and the Model_CNN.py files that have a refactored version of the code that can be imported to the main.py file. Moreover, the main.py file imports the BreastMNIST_CNN.py and BloodMNIST_CNN.py files to use. The datasets folder contains a .gitkeep file in order to be pushed to the repository as empty directories cannot exist in GitHub. The files in letter folders, import the breastmnist and bloodmnist dataset respectively and download it.
 
 The packages required to run the code are torch, torchvision, medmnist, matplotlib, sys and pathlib.
 
