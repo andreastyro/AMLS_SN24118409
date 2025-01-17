@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 # Set parameters
 data_flag = 'breastmnist'
 download = True
-NUM_EPOCHS = 100
+NUM_EPOCHS = 50
 BATCH_SIZE = 32
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.00006
 
 # Dataset info
 info = INFO[data_flag]
@@ -24,7 +24,11 @@ n_classes = len(info['label'])   # Number of classes (2 for BreastMNIST)
 DataClass = getattr(medmnist, info['python_class'])
 
 # Transform
-transform = transforms.Compose([transforms.ToTensor()])
+transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomRotation(degrees=10),
+    transforms.ToTensor()
+])
 
 # Load data
 train_data = DataClass(split='train', transform=transform, download=download)
@@ -35,7 +39,7 @@ train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
 
-#Visualize Images
+"""#Visualize Images
 montage_image = train_data.montage(length=20)
 
 # Display the montage using matplotlib
@@ -43,23 +47,29 @@ plt.figure(figsize=(10, 10))
 plt.imshow(montage_image)
 plt.axis("off")
 plt.title("Montage of Training Data")
-plt.show()
+plt.show()"""
 
 # Define the CNN model
 class BreastMNISTCNN(nn.Module):
     def __init__(self):
         super(BreastMNISTCNN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # Output: 32x28x28
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)  # Output: 64x28x28
-        self.pool = nn.MaxPool2d(2, 2)  # Halves dimensions: 64x14x14
-        self.fc1 = nn.Linear(64 * 14 * 14, 128)  # Fully connected layer
-        self.fc2 = nn.Linear(128, 1)  # Output layer (1 neuron for binary classification)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(64)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(128)
+        self.pool1 = nn.MaxPool2d(2, 2)  # 64x14x14
+
+        self.fc1 = nn.Linear(128 * 14 * 14, 256)  # Adjust for flattening
+        self.dropout = nn.Dropout(p=0.5)
+        self.fc2 = nn.Linear(256, 1)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))  # Convolution + ReLU
-        x = self.pool(F.relu(self.conv2(x)))  # Convolution + ReLU + Pooling
-        x = x.view(-1, 64 * 14 * 14)  # Flatten
-        x = F.relu(self.fc1(x))  # Fully connected + ReLU\
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = self.pool1(x)
+        x = x.view(x.size(0), -1)  # Flatten for fully connected layers
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
         x = self.fc2(x)  # Output logits
         return x
 
@@ -69,7 +79,7 @@ print(model)
 
 # Define loss function and optimizer
 criterion = nn.BCEWithLogitsLoss()  # Combines sigmoid + binary cross-entropy
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-2)
 
 # Lists to store loss and accuracy
 train_losses = []
@@ -152,6 +162,12 @@ epochs = range(1, NUM_EPOCHS + 1)
 
 # Create subplots
 fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+
+# Adjusting the y-axis limits for Loss (first graph)
+axes[0].set_ylim(0, 1)
+
+# Adjusting the y-axis limits for Accuracy (second graph)
+axes[1].set_ylim(0.5, 1)
 
 # Plot Loss
 axes[0].plot(epochs, train_losses, label="Training Loss", marker='o')
