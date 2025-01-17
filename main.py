@@ -41,7 +41,7 @@ plot_performance(
     range(1, NUM_EPOCHS + 1), train_losses, val_losses, train_accuracies, val_accuracies
 )
 
-# Test the model
+# Testing the model
 test_loss, test_accuracy = test_model(model, test_loader, criterion)
 
 #Add folder B to the Python path
