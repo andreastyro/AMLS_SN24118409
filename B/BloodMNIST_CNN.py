@@ -12,7 +12,7 @@ def get_data_loaders(data_flag='bloodmnist', batch_size=32, download=True):
     info = INFO[data_flag]
     DataClass = getattr(medmnist, info['python_class'])
 
-    transform = transforms.Compose([transforms.ToTensor()]) #No data augmentation
+    transform = transforms.Compose([transforms.ToTensor()]) #No data augmentations
 
     train_data = DataClass(split='train', transform=transform, download=download)
     test_data = DataClass(split='test', transform=transform, download=download)
